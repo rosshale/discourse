@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/SamSaffron/MiniProfiler
-  revision: d149f34fcdb64b312f70b1586d7ead822cef9789
+  revision: cfbd331b6bdcb5b6776c5d0f46d02d93105297cb
   specs:
     rack-mini-profiler (0.1.23)
       rack (>= 1.1.3)
@@ -245,8 +245,8 @@ GEM
     multi_json (1.6.1)
     multipart-post (1.1.5)
     mustache (0.99.4)
-    net-scp (1.0.6)
-      net-ssh (>= 2.6.5)
+    net-scp (1.0.4)
+      net-ssh (>= 1.99.1)
     net-ssh (2.6.5)
     net-ssh-gateway (1.2.0)
       net-ssh (>= 2.6.5)
