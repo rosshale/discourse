@@ -1,5 +1,16 @@
 module CurrentUser
 
+  def self.lookup_from_env(env)
+    request = Rack::Request.new(env)
+    auth_token = request.cookies["_t"]
+    user = nil
+    if auth_token && auth_token.length == 32
+      user = User.where(auth_token: auth_token).first 
+    end
+    
+    return user
+  end
+
   def current_user
     return @current_user if @current_user || @not_logged_in
 
@@ -21,9 +32,9 @@ module CurrentUser
     @not_logged_in = session[:current_user_id].blank?
     if @current_user
       @current_user.update_last_seen! 
-      if @current_user.ip_address != request.remote_ip
+      if (@current_user.ip_address != request.remote_ip) and request.remote_ip.present?
         @current_user.ip_address = request.remote_ip
-        User.exec_sql('update users set ip_address = ? where id = ?', request.remote_ip, @current_user.id)
+        @current_user.update_column(:ip_address, request.remote_ip)
       end
     end
     @current_user

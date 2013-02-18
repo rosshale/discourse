@@ -47,8 +47,21 @@ class TopicLink < ActiveRecord::Base
             internal = true
 
             route = Rails.application.routes.recognize_path(parsed.path)
+
+            # We aren't interested in tracking internal links to users
+            next if route[:controller] == 'users'
+
             topic_id = route[:topic_id]
             post_number = route[:post_number] || 1
+
+            # Store the canonical URL
+            topic = Topic.where(id: topic_id).first
+
+            if topic.present?
+              url = "#{Discourse.base_url}#{topic.relative_url}"
+              url << "/#{post_number}" if post_number.to_i > 1
+            end
+
           end
 
           # Skip linking to ourselves

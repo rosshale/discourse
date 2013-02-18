@@ -9,6 +9,8 @@ class MessageBus::Rack::Middleware
   def self.start_listener
     unless @started_listener
       MessageBus.subscribe do |msg|
+        p msg.channel
+        p msg.message_id
         EM.next_tick do 
           @@connection_manager.notify_clients(msg) if @@connection_manager
         end
@@ -44,6 +46,11 @@ class MessageBus::Rack::Middleware
         parsed = Rack::Request.new(env)
         ::MessageBus.publish parsed["channel"], parsed["data"]
         return [200,{"Content-Type" => "text/html"},["sent"]]
+    end
+
+    if env['PATH_INFO'].start_with? '/message-bus/_diagnostics' 
+      diags = MessageBus::Rack::Diagnostics.new(@app)
+      return diags.call(env)
     end
 
     client_id = env['PATH_INFO'].split("/")[2]

@@ -1,4 +1,5 @@
 require 'current_user'
+require 'canonical_url'
 require_dependency 'discourse'
 require_dependency 'custom_renderer'
 require 'archetype'
@@ -6,6 +7,8 @@ require_dependency 'rate_limiter'
 
 class ApplicationController < ActionController::Base
   include CurrentUser
+  
+  include CanonicalURL::ControllerExtensions
 
   serialization_scope :guardian
 
@@ -66,17 +69,20 @@ class ApplicationController < ActionController::Base
       # for now do a simple remap, we may look at cleaner ways of doing the render
       raise ActiveRecord::RecordNotFound
     else
-      render file: 'public/404', layout: false, status: 404
+      render file: 'public/404', formats: [:html], layout: false, status: 404
     end
   end
 
   rescue_from Discourse::InvalidAccess do
-    render file: 'public/403', layout: false, status: 403
+    render file: 'public/403', formats: [:html], layout: false, status: 403
   end
 
   def store_preloaded(key, json)
     @preloaded ||= {}
-    @preloaded[key] = json
+    # I dislike that there is a gsub as opposed to a gsub! 
+    #  but we can not be mucking with user input, I wonder if there is a way 
+    #  to inject this safty deeper in the library or even in AM serializer
+    @preloaded[key] = json.gsub("</", "<\\/")
   end
 
   # If we are rendering HTML, preload the session data
